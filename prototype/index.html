@@ -1,0 +1,152 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body><title>Mappe CV-Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: Bewerbungsmappe auf dem Schreibtisch. Links die Register, rechts das Blatt. */
+:root{
+  --desk:#dfe4ec;--panel:#f7f8fb;--raised:#ffffff;--ink:#141c2b;--muted:#566175;--line:#c8d0dc;
+  --accent:#2347c5;--accent-soft:#e3e9fb;--on-accent:#ffffff;--ok:#17704a;--warn:#96540a;--danger:#b3261e;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:Figtree,"Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --desk:#0e131b;--panel:#171e29;--raised:#202936;--ink:#e8edf5;--muted:#9eaabc;--line:#333f50;
+  --accent:#8eabff;--accent-soft:#26335a;--on-accent:#0d1426;--ok:#62cf9e;--warn:#e9ae62;--danger:#ff9a8f;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --desk:#0e131b;--panel:#171e29;--raised:#202936;--ink:#e8edf5;--muted:#9eaabc;--line:#333f50;
+  --accent:#8eabff;--accent-soft:#26335a;--on-accent:#0d1426;--ok:#62cf9e;--warn:#e9ae62;--danger:#ff9a8f;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--desk);color:var(--ink);font:400 15px/1.45 var(--body);overflow:hidden}
+#app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding-block:10px}
+.brand{font:800 24px/1 var(--display);letter-spacing:-.03em}
+.cvpick{display:flex;align-items:center;gap:6px;min-width:0;flex:0 1 auto}
+.cvpick select{max-width:230px}
+.grow{flex:1}
+.status{font-size:13px;color:var(--muted);white-space:nowrap}.status.err{color:var(--danger)}
+.who{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap}
+.btn{border:1px solid var(--line);background:var(--raised);border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.danger{color:var(--danger)}.btn.small{padding:3px 9px;font-size:13px}
+.btn[disabled]{opacity:.55;cursor:default}
+.iconbtn{border:0;background:none;cursor:pointer;color:var(--muted);padding:3px 7px;border-radius:5px;font-weight:600}
+.iconbtn:hover{background:var(--accent-soft);color:var(--ink)}
+input,select,textarea{background:var(--raised);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%}
+select{width:auto}textarea{resize:vertical;min-height:76px}
+label{display:grid;gap:3px;font-size:13px;font-weight:600;color:var(--muted);min-width:0}
+.work{display:grid;grid-template-columns:minmax(340px,430px) minmax(0,1fr);gap:18px;min-height:0;padding-bottom:14px}
+.side{display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0}
+.tabs{display:flex;gap:3px;padding-left:10px}
+.tabs button{border:1px solid var(--line);border-bottom:0;background:transparent;border-radius:9px 9px 0 0;padding:7px 15px;cursor:pointer;font-weight:600;color:var(--muted);position:relative;top:1px}
+.tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:auto;padding:16px}
+.stack{display:grid;gap:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+details{border-top:1px solid var(--line);padding-block:9px}
+summary{cursor:pointer;font:600 16px var(--display)}
+details>.stack{margin-top:10px}
+.item{background:var(--raised);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px}
+.itemhead{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:600;font-size:14px;min-width:0}
+.itemhead span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row{display:grid;grid-template-columns:1fr 128px auto;gap:6px;align-items:center}
+.photo{display:flex;align-items:center;gap:10px}
+.photo img,.photo .ph{width:52px;height:64px;object-fit:cover;border-radius:5px;background:var(--accent-soft);display:grid;place-items:center;font-size:12px;color:var(--muted);flex:none}
+h2{font:600 18px var(--display);margin:0;text-wrap:balance}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.gal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tcard{border:1px solid var(--line);border-radius:8px;background:var(--raised);overflow:hidden;display:grid;grid-template-rows:auto 1fr;cursor:pointer;text-align:left;padding:0}
+.tcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.thumb{height:178px;overflow:hidden;background:#fff;position:relative;display:block}
+.thumb iframe{width:794px;height:1123px;border:0;transform:scale(.235);transform-origin:0 0;pointer-events:none;position:absolute;left:0;top:0}
+.tmeta{padding:7px 9px;display:grid;gap:1px}.tmeta b{font:600 15px var(--display)}.tmeta small{color:var(--muted);font-size:12.5px;line-height:1.3}
+.tacts{display:flex;gap:4px;flex-wrap:wrap;padding:0 7px 7px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.msg{font-size:13.5px;padding:8px 10px;border-radius:6px;background:var(--accent-soft)}.msg.err{color:var(--danger)}.msg.okk{color:var(--ok)}
+.check{display:flex;grid-template-columns:none;align-items:center;gap:8px;font-weight:500;color:var(--ink);font-size:14px}.check input{width:auto}
+.state{display:inline-block;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid currentColor}
+.state.live{color:var(--ok)}.state.off{color:var(--muted)}.state.stale{color:var(--warn)}
+code{font-size:13px;overflow-wrap:anywhere}
+.desk{display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0;min-width:0;gap:8px}
+.viewbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--raised)}
+.seg button{border:0;background:none;padding:5px 12px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.pages{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.scroller{overflow:auto;min-height:0;display:flex;justify-content:center;align-items:flex-start;padding:2px 0 24px}
+.sheet{position:relative;flex:none;background:#fff;box-shadow:0 1px 3px rgba(20,28,43,.25),0 10px 28px rgba(20,28,43,.16);overflow:hidden}
+.sheet iframe{border:0;display:block;transform-origin:0 0;background:#fff}
+.cut{position:absolute;left:0;right:0;border-top:1.5px dashed #2347c5;pointer-events:none}
+.cut span{position:absolute;right:6px;top:3px;font-size:11px;background:#2347c5;color:#fff;padding:0 6px;border-radius:3px}
+.sheet.phone{border-radius:18px}
+.panes{display:none}
+#public{position:fixed;inset:0;background:#fff;overflow:auto;z-index:20;color:#141c2b}
+#public iframe{width:100%;border:0;display:block}
+.pubbar{display:flex;justify-content:space-between;gap:10px;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));background:#eef1f6;font-size:13px;color:#141c2b}
+.pubbar button{border:0;background:none;color:#2347c5;font-weight:700;cursor:pointer;padding:0}
+.notfound{max-width:30em;margin:18vh auto;text-align:center;padding-inline:16px}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:8px 14px;border-radius:7px;font-weight:600;z-index:30;max-width:calc(100% - 32px)}
+@media (max-width:900px){
+  .work{grid-template-columns:minmax(0,1fr);padding-bottom:8px}
+  #app[data-pane="edit"] .desk,#app[data-pane="view"] .side{display:none}
+  .panes{display:inline-flex}
+  .who{display:none}
+  .cvpick select{max-width:150px}
+}
+@media (prefers-reduced-motion:no-preference){.tcard{transition:box-shadow .12s}}
+</style>
+
+<div id="app" data-pane="edit">
+  <header class="top">
+    <div class="brand">Mappe</div>
+    <div class="cvpick">
+      <select id="cvSel" aria-label="Lebenslauf auswählen"></select>
+      <button class="btn small" id="newCv">Neu</button>
+      <button class="btn small" id="dupCv">Kopieren</button>
+      <button class="btn small danger" id="delCv">Löschen</button>
+    </div>
+    <div class="grow"></div>
+    <span class="status" id="status" role="status">Bereit</span>
+    <span class="who" id="who"></span>
+    <button class="btn primary" id="pdfBtn">PDF exportieren</button>
+  </header>
+  <div class="work">
+    <section class="side">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-daten" data-tab="daten">Daten</button>
+        <button role="tab" id="tab-vorlagen" data-tab="vorlagen">Vorlagen</button>
+        <button role="tab" id="tab-online" data-tab="online">Online-Seite</button>
+      </div>
+      <div class="panel" id="panel"></div>
+    </section>
+    <section class="desk">
+      <div class="viewbar">
+        <div class="seg" id="viewSeg">
+          <button data-view="a4">A4</button><button data-view="web">Online</button><button data-view="phone">Handy</button>
+        </div>
+        <span class="pages" id="pages"></span>
+      </div>
+      <div class="scroller" id="scroller"><div class="sheet" id="sheet"><iframe id="preview" title="Vorschau des Lebenslaufs" sandbox="allow-same-origin"></iframe></div></div>
+    </section>
+  </div>
+</div>
+<div class="seg panes" id="paneSeg" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:10;box-shadow:0 4px 14px rgba(20,28,43,.3)">
+  <button data-pane="edit">Bearbeiten</button><button data-pane="view">Vorschau</button>
+</div>
+<div id="public" hidden></div>
+<div id="toast" role="status" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.2.0/mustache.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+</body></html>
