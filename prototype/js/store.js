@@ -1,66 +1,57 @@
-/* Speicherschicht. In der veröffentlichten Seite: Konto und Datenbank der Plattform.
-   Lokal geöffnet: Browser-Speicher. Das spätere Backend ersetzt nur diese Datei. */
+/* Speicherschicht. Mit Backend: Konto und Datenbank über /api.
+   Ohne Backend (z. B. npx serve): Browser-Speicher. */
 (function () {
   const KEY = "mappe.v1";
   let mem = { cvs: {}, templates: {}, pages: {} };
   try { mem = { ...mem, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; } catch (e) { /* ohne Speicher weiter */ }
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) { /* voll oder gesperrt */ } };
 
-  let db = null, uid = null, account = { name: "Demo-Konto", cloud: false };
+  let server = false, account = { name: "Demo-Konto", cloud: false };
+
+  async function api(method, path, body) {
+    const r = await fetch("/api" + path, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body && JSON.stringify(body) });
+    if (r.status === 401 && server) { location.href = "/login.html"; throw new Error("Nicht angemeldet"); }
+    if (!r.ok) throw new Error((await r.text()) || r.statusText);
+    return r.headers.get("content-type")?.includes("json") ? r.json() : null;
+  }
 
   async function connect() {
-    if (!window.claude?.use) return;
-    db = await window.claude.use("db");
-    const user = await window.claude.use("user");
-    if (!db || !user) { db = null; return; }
-    const me = await user.me();
-    uid = me.id;
-    if (!uid) { db = null; return; }
-    account = { name: me.name || "Angemeldet", cloud: true };
+    let r;
+    try { r = await fetch("/api/me"); } catch (e) { return; }
+    if (r.status === 401) {
+      server = true;
+      if (!/^#cv-/.test(location.hash)) location.href = "/login.html";
+      return;
+    }
+    if (!r.ok) return;
+    server = true;
+    account = { name: (await r.json()).name, cloud: true };
   }
-  const col = () => db.collection("data/users/" + uid);
 
   async function loadAll() {
-    if (!db) return { cvs: Object.values(mem.cvs), templates: Object.values(mem.templates) };
-    const snap = await col().get();
-    const cvs = [], templates = [];
-    snap.docs.forEach(d => { const v = d.data(); (d.id.startsWith("tpl_") ? templates : cvs).push(v); });
+    if (!account.cloud) return { cvs: Object.values(mem.cvs), templates: Object.values(mem.templates) };
+    const docs = await api("GET", "/docs"), cvs = [], templates = [];
+    for (const [id, v] of Object.entries(docs)) (id.startsWith("tpl_") ? templates : cvs).push(v);
     return { cvs, templates };
   }
-  async function saveCv(cv) {
-    mem.cvs[cv.id] = cv; persist();
-    if (db) await col().doc("cv_" + cv.id).set(JSON.parse(JSON.stringify(cv)));
-  }
-  async function deleteCv(id) {
-    delete mem.cvs[id]; persist();
-    if (db) await col().doc("cv_" + id).delete();
-  }
-  async function saveTemplate(t) {
-    mem.templates[t.id] = t; persist();
-    if (db) await col().doc("tpl_" + t.id).set(JSON.parse(JSON.stringify(t)));
-  }
-  async function deleteTemplate(id) {
-    delete mem.templates[id]; persist();
-    if (db) await col().doc("tpl_" + id).delete();
-  }
-  async function publish(slug, page) {
-    mem.pages[slug] = page; persist();
-    if (db) await db.doc("pages/" + slug).set(JSON.parse(JSON.stringify(page)));
-  }
-  async function unpublish(slug) {
-    delete mem.pages[slug]; persist();
-    if (db) await db.doc("pages/" + slug).delete();
-  }
+  const local = (bag, id, v) => { if (account.cloud) return; if (v) mem[bag][id] = v; else delete mem[bag][id]; persist(); };
+
+  async function saveCv(cv) { local("cvs", cv.id, cv); if (account.cloud) await api("PUT", "/docs/cv_" + cv.id, cv); }
+  async function deleteCv(id) { local("cvs", id); if (account.cloud) await api("DELETE", "/docs/cv_" + id); }
+  async function saveTemplate(t) { local("templates", t.id, t); if (account.cloud) await api("PUT", "/docs/tpl_" + t.id, t); }
+  async function deleteTemplate(id) { local("templates", id); if (account.cloud) await api("DELETE", "/docs/tpl_" + id); }
+  async function publish(slug, page) { local("pages", slug, page); if (account.cloud) await api("PUT", "/pages/" + slug, page); }
+  async function unpublish(slug) { local("pages", slug); if (account.cloud) await api("DELETE", "/pages/" + slug); }
   async function getPage(slug) {
-    if (db) { const d = await db.doc("pages/" + slug).get(); if (d.exists) return d.data(); return null; }
-    return mem.pages[slug] || null;
+    if (!server) return mem.pages[slug] || null;
+    const r = await fetch("/api/pages/" + encodeURIComponent(slug));
+    return r.ok ? r.json() : null;
   }
+  async function logout() { await fetch("/api/logout", { method: "POST" }); location.href = "/login.html"; }
   async function savePdf(filename, blob) {
-    const dl = window.claude?.use ? await window.claude.use("downloads") : null;
-    if (dl) { await dl.save({ filename, data: blob }); return; }
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = filename; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
-  window.MappeStore = { connect, loadAll, saveCv, deleteCv, saveTemplate, deleteTemplate, publish, unpublish, getPage, savePdf, get account() { return account; } };
+  window.MappeStore = { connect, loadAll, saveCv, deleteCv, saveTemplate, deleteTemplate, publish, unpublish, getPage, savePdf, logout, get account() { return account; }, get canEdit() { return account.cloud || !server; } };
 })();

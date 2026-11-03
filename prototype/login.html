@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mappe CV Anmelden</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1d1d1b;--muted:#6b6a66;--line:#e2e0da;--acc:#2f5d50;--err:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#202020;--ink:#ecebe7;--muted:#a3a29d;--line:#34332f;--acc:#7fb8a6;--err:#f2b8b5}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif;padding:16px}
+form{width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:12px}
+h1{margin:0 0 4px;font-size:20px}
+label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+button{font:inherit;padding:9px;border:0;border-radius:8px;background:var(--acc);color:var(--card);cursor:pointer}
+.alt{background:none;color:var(--acc);padding:0}
+#msg{color:var(--err);font-size:13px;min-height:1em;margin:0}
+</style>
+</head>
+<body>
+<form id="f">
+  <h1>Mappe CV</h1>
+  <label>Name <input name="name" autocomplete="username" required></label>
+  <label>Passwort <input name="password" type="password" autocomplete="current-password" required></label>
+  <p id="msg"></p>
+  <button id="go">Anmelden</button>
+  <button type="button" class="alt" id="switch" hidden>Neues Konto anlegen</button>
+</form>
+<script>
+let mode = "login";
+const f = document.getElementById("f"), msg = document.getElementById("msg"), sw = document.getElementById("switch"), go = document.getElementById("go");
+fetch("/api/config").then(r => r.json()).then(c => { sw.hidden = !c.allowSignup; });
+sw.onclick = () => {
+  mode = mode === "login" ? "register" : "login";
+  go.textContent = mode === "login" ? "Anmelden" : "Konto anlegen";
+  sw.textContent = mode === "login" ? "Neues Konto anlegen" : "Zur Anmeldung";
+  f.password.autocomplete = mode === "login" ? "current-password" : "new-password";
+  msg.textContent = "";
+};
+f.onsubmit = async e => {
+  e.preventDefault(); msg.textContent = "";
+  const r = await fetch("/api/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: f.name.value, password: f.password.value }) });
+  if (r.ok) location.href = "/";
+  else msg.textContent = r.status === 401 ? "Name oder Passwort falsch." : (await r.text()).replace(/^"|"$/g, "") || "Fehler " + r.status;
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+services:
+  mappe:
+    image: ghcr.io/diddlik/mappe-cv:latest
+    ports:
+      - "8080:8080"
+    environment:
+      Mappe__AllowSignup: "true"
+    volumes:
+      - mappe-data:/data
+    restart: unless-stopped
+
+volumes:
+  mappe-data:

@@ -297,7 +297,7 @@
     if (!m) { pub.hidden = true; return; }
     pub.hidden = false; pub.textContent = "";
     const page = await Store.getPage(m[1]).catch(() => null);
-    const bar = S.cvs.length ? `<div class="pubbar"><span>Das sehen Besucher dieser Seite</span><button id="pubBack">Zurück zum Editor</button></div>` : "";
+    const bar = Store.canEdit ? `<div class="pubbar"><span>Das sehen Besucher dieser Seite</span><button id="pubBack">Zurück zum Editor</button></div>` : "";
     if (!page) { pub.innerHTML = bar + `<div class="notfound"><h2>Diese Seite ist nicht online</h2><p>Prüfe die Adresse oder frage die Person nach dem aktuellen Link.</p></div>`; }
     else {
       pub.innerHTML = bar + `<iframe id="pubFrame" title="Lebenslauf von ${esc(page.name)}" sandbox="allow-same-origin"></iframe>`;
@@ -315,7 +315,9 @@
   renderAll();
   (async () => {
     await Store.connect();
-    $("#who").textContent = Store.account.cloud ? Store.account.name : "Demo-Konto (nur dieser Browser)";
+    const who = $("#who");
+    who.textContent = Store.account.cloud ? Store.account.name + " · Abmelden" : "Demo-Konto (nur dieser Browser)";
+    if (Store.account.cloud) { who.style.cursor = "pointer"; who.title = "Abmelden"; who.onclick = () => Store.logout(); }
     const { cvs, templates } = await Store.loadAll();
     S.imported = templates;
     if (cvs.length) { S.cvs = cvs.sort((a, b) => b.updated - a.updated); S.cvId = S.cvs[0].id; }
